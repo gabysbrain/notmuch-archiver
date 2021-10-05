@@ -1,4 +1,4 @@
-module tomtorsneyweir.com/move_mails
+module tomtorsneyweir.com/notmuch-imap-tag-mover
 
 go 1.16
 
