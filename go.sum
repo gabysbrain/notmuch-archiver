@@ -1,0 +1,4 @@
+github.com/nmrshll/go-cp v0.0.0-20180115193924-61436d3b7cfa h1:/SRdH7jdcIW6WBtZO1BlpI+6TxqpOiMqLZJ10Uhk0k0=
+github.com/nmrshll/go-cp v0.0.0-20180115193924-61436d3b7cfa/go.mod h1:/Uh/WFiWYXoTKVsM302U10XnogAldY7up/xErXmt1FA=
+github.com/zenhack/go.notmuch v0.0.0-20200930180226-732f6524c33d h1:exM4wdEiCu8bz3arJmh6TZmOp/7RtKZTOkvRT5J2OQg=
+github.com/zenhack/go.notmuch v0.0.0-20200930180226-732f6524c33d/go.mod h1:zJtFvR3NinVdmBiLyB4MyXKmqyVfZEb2cK97ISfTgV8=
