@@ -12,11 +12,16 @@ import(
   cp "github.com/nmrshll/go-cp"
 )
 
-const Dir = "/home/tom/.mail/"
+var MailDir string = MyHomeDir() + "/.mail/"
 const SubFolder = "vrvis"
 const ArchiveFolder = "Archive"
 
 var IgnoreTags = []string{"unread", "attachment", "signed", "replied", "archives", "flagged", "important"}
+
+func MyHomeDir() string {
+  homeDir, _ := os.UserHomeDir()
+  return homeDir
+}
 
 func ShouldIgnoreTag(tag string) bool {
   for _, t := range IgnoreTags {
@@ -28,7 +33,7 @@ func ShouldIgnoreTag(tag string) bool {
 }
 
 func CreateMaildir(maildir string) {
-  fullpath := fmt.Sprintf("%s/%s", Dir, maildir)
+  fullpath := fmt.Sprintf("%s/%s", MailDir, maildir)
   fmt.Println("creating " + fullpath)
   // FIXME: only create what's needed
   os.Mkdir(fullpath, 0755)
@@ -99,7 +104,7 @@ func Maildir2tag(folder string) string {
 }
 
 func CopyMessage(db *notmuch.DB, msg *notmuch.Message, folder string) string {
-  destFolder := fmt.Sprintf("%s/%s/%s/cur", Dir, SubFolder, folder)
+  destFolder := fmt.Sprintf("%s/%s/%s/cur", MailDir, SubFolder, folder)
 
   // FIXME: only create if needed
   CreateMaildir(destFolder)
@@ -197,7 +202,7 @@ func TagsToFolders(db *notmuch.DB) []string {
 }
 
 func main() {
-  db,err := notmuch.Open(Dir, notmuch.DBReadWrite)
+  db,err := notmuch.Open(MailDir, notmuch.DBReadWrite)
   if err != nil {
     log.Fatal(err)
   }
