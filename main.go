@@ -78,6 +78,8 @@ func Tag2maildir(tag string) string {
       return "Trash"
     case "sent":
       return "Sent"
+    case "draft":
+      return "Drafts"
   }
 
   // everything gets regex manipulated
@@ -95,6 +97,8 @@ func Maildir2tag(folder string) string {
       return "trash"
     case "Sent":
       return "sent"
+    case "Drafts":
+      return "draft"
   }
 
   // everything gets regex manipulated
