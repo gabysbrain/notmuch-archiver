@@ -16,7 +16,7 @@ var MailDir string = MyHomeDir() + "/.mail/"
 const SubFolder = "vrvis"
 const ArchiveFolder = "Archive"
 
-var IgnoreTags = []string{"unread", "attachment", "signed", "replied", "archives", "flagged", "important"}
+var IgnoreTags = []string{"unread", "new", "attachment", "signed", "replied", "archives", "flagged", "important"}
 
 func MyHomeDir() string {
   homeDir, _ := os.UserHomeDir()
