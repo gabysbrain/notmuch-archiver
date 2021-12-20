@@ -76,6 +76,8 @@ func Tag2maildir(tag string) string {
       return "Inbox"
     case "trash":
       return "Trash"
+    case "spam":
+      return "Junk"
     case "sent":
       return "Sent"
     case "draft":
@@ -95,6 +97,8 @@ func Maildir2tag(folder string) string {
       return "inbox"
     case "Trash":
       return "trash"
+    case "Junk":
+      return "spam"
     case "Sent":
       return "sent"
     case "Drafts":
