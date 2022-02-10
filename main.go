@@ -161,7 +161,6 @@ func IncorrectMessagePaths(db *notmuch.DB, msg *notmuch.Message) []string {
     for _, tag := range msgTags {
       // FIXME: clean this up to normalize the path separators
       re := fmt.Sprintf("%s%s/%s", MailDir, SubFolder, Tag2maildir(tag))
-      println(re)
       m, _ := regexp.MatchString(re, path)
       if m {
         hasTag = true
@@ -175,7 +174,6 @@ func IncorrectMessagePaths(db *notmuch.DB, msg *notmuch.Message) []string {
   }
 
   msgPaths = msgPaths[:n]
-  fmt.Printf("msgs to remove %#v\n", msgPaths)
   return msgPaths
 }
 
