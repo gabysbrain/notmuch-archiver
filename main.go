@@ -1,5 +1,8 @@
 package main
 
+// TODO: when processing trash and spam messages make sure they only 
+// have one tag, otherwise ask what to do
+
 import(
   "fmt"
   "log"
@@ -54,6 +57,20 @@ func TagList(db *notmuch.DB) []string {
       output = append(output, t.Value)
     }
   }
+  return output
+}
+
+func MsgTags(msg *notmuch.Message) []string {
+  tags := msg.Tags()
+
+  var t *notmuch.Tag
+  output := []string{}
+  for tags.Next(&t) {
+    if !ShouldIgnoreTag(t.Value) {
+      output = append(output, t.Value)
+    }
+  }
+
   return output
 }
 
@@ -121,13 +138,6 @@ func CopyMessage(db *notmuch.DB, msg *notmuch.Message, folder string) string {
   nonUIDfn := r.ReplaceAllString(filepath.Base(msg.Filename()), "")
   destPath := fmt.Sprintf("%s/%s", destFolder, nonUIDfn)
 
-
-  // FIXME: there may be more than one filename, make sure we get one that's wrong
-  // for now die if there's more than one path to a message
-  if len(MsgFilenames(msg)) > 1 {
-    log.Fatal(fmt.Sprintf("message at paths %#v has too many filenames to handle", MsgFilenames(msg)))
-  }
-
   oldPath := msg.Filename()
   fmt.Printf("\u001B[32m" + "copying message id %s from %s to %s\n" + "\u001B[0m", msg.ID(), oldPath, destPath)
 
@@ -138,6 +148,35 @@ func CopyMessage(db *notmuch.DB, msg *notmuch.Message, folder string) string {
   db.AddMessage(destPath)
 
   return oldPath
+}
+
+// return a list of paths to clean from the message (folders it doesn't belong in)
+func IncorrectMessagePaths(db *notmuch.DB, msg *notmuch.Message) []string {
+  msgPaths := MsgFilenames(msg)
+  msgTags := MsgTags(msg)
+
+  n := 0
+  for _, path := range msgPaths {
+    hasTag := false
+    for _, tag := range msgTags {
+      // FIXME: clean this up to normalize the path separators
+      re := fmt.Sprintf("%s%s/%s", MailDir, SubFolder, Tag2maildir(tag))
+      println(re)
+      m, _ := regexp.MatchString(re, path)
+      if m {
+        hasTag = true
+        break
+      }
+    }
+    if !hasTag {
+      msgPaths[n] = path
+      n++
+    }
+  }
+
+  msgPaths = msgPaths[:n]
+  fmt.Printf("msgs to remove %#v\n", msgPaths)
+  return msgPaths
 }
 
 // make sure all mail for the given tag is in a proper folder
@@ -156,8 +195,9 @@ func EnsureFolderTag(db *notmuch.DB, tag string) []string {
 
   var msg *notmuch.Message
   for msgs.Next(&msg) {
-    rmPath := CopyMessage(db, msg, tagFolder)
-    rmPaths = append(rmPaths, rmPath)
+    CopyMessage(db, msg, tagFolder)
+    newRmPaths := IncorrectMessagePaths(db, msg)
+    rmPaths = append(rmPaths, newRmPaths...)
   }
 
   return rmPaths
@@ -168,6 +208,7 @@ func ArchiveUntagged(db *notmuch.DB) []string {
 
   var tags = TagList(db)
 
+  // Find all messages without any other tags (except the ignore ones)
   querystring := fmt.Sprintf("folder:/^%s/ and NOT folder:%s/%s", SubFolder, SubFolder, ArchiveFolder)
   for _,t := range tags {
     querystring += " and NOT tag:" + t
@@ -180,8 +221,10 @@ func ArchiveUntagged(db *notmuch.DB) []string {
 
   var msg *notmuch.Message
   for msgs.Next(&msg) {
-    rmPath := CopyMessage(db, msg, ArchiveFolder)
-    rmPaths = append(rmPaths, rmPath)
+    // Need the path before the copy so we don't delete the message from archives
+    msgPaths := MsgFilenames(msg)
+    CopyMessage(db, msg, ArchiveFolder)
+    rmPaths = append(rmPaths, msgPaths...)
   }
 
   return rmPaths
